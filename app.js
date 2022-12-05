@@ -1,8 +1,27 @@
-const http = require('http');
-let app = http.createServer((req, res) => {
-    // Set a response type of plain text for the response
-    res.writeHead(200, {'Content-Type': 'text/plain'});
-    res.end('Hello World!\n');
+const express = require("express");
+const app = express();
+const port = 3000;
+app.use(express.json());
+
+app.get("/", (req, res) => {
+  res.send("Hello World!");
 });
-app.listen(3000, '127.0.0.1');
-console.log('Node server running on port 3000');
+app.get("/signup", (req, res) => {
+  console.log(req.body);
+  const { email, password } = req.body;
+  if (!email || !password) return res.sendStatus(400);
+  res.send("Gamed yala");
+});
+
+app.listen(port, () => {
+  console.log(`Example app listening on port ${port}`);
+});
+
+const mongoose = require("mongoose");
+mongoose.connect(
+  "mongodb+srv://sarhan:sarhan@cluster0.mxjd9bh.mongodb.net/?retryWrites=true&w=majority",
+  {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+  }
+);
