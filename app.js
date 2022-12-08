@@ -23,6 +23,9 @@ app.get("/verfy/:uniqueString", SignUpController.handleVerfication);
 
 app.post("/signIn", SignInController.handleSignIn);
 
+const MonitorController = require("./controllers/monitorController");
+app.post("/addCheck", auth, MonitorController.handleAddCheck);
+
 app.get("/", (req, res) => {
   res.send("Hello World!");
 });
