@@ -29,6 +29,7 @@ const handleAddCheck = async (req, res) => {
   });
   try {
     const savedCheck = await check.save();
+    intiateSingleContinousCheck(savedCheck._id);
     res.json(savedCheck);
   } catch (err) {
     res.json({ message: err });
@@ -51,7 +52,6 @@ const handleGetChecksByTag = async (req, res) => {
   const user = await User.findOne({
     email: email.toLowerCase(),
   });
-  //check if check contains the requested tag
   const checks = await Check.find({
     owner: user._id,
   }).filter((check) => check.tags.includes(req.params.tag));
@@ -69,6 +69,7 @@ const hadleDeleteCheck = async (req, res) => {
   });
   if (!check) return res.status(400).send("Check not found");
   try {
+    stopSingleContinousCheck(check._id);
     const removedCheck = await check.remove();
     res.json(removedCheck);
   } catch (err) {
@@ -86,6 +87,7 @@ const handleUpdateCheck = async (req, res) => {
   });
   if (!check) return res.status(400).send("Check not found");
   try {
+    stopSingleContinousCheck(check._id);
     const updatedCheck = await check.updateOne({
       $set: {
         name: req.body.name,
@@ -104,6 +106,7 @@ const handleUpdateCheck = async (req, res) => {
         ignoreSSL: req.body.ignoreSSL,
       },
     });
+    intiateSingleContinousCheck(updatedCheck._id);
     res.json(updatedCheck);
   } catch (err) {
     res.json({ message: err });

@@ -59,6 +59,9 @@ const CheckSchema = new Schema({
     type: Date,
     default: Date.now,
   },
+  intervalId: {
+    type: String,
+  },
 });
 
-module.exports = mongoose.model("Check", UserSchema);
+module.exports = mongoose.model("Check", CheckSchema);
