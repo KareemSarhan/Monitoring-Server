@@ -2,15 +2,24 @@ const User = require("../models/User");
 const Check = require("../models/Check");
 const Report = require("../models/Report");
 const axios = require("axios");
-
+const numberOfChecks = 0;
 const intiateContinuousCheck = async () => {
-  numberOfChecks = 0;
   const checks = await Check.find();
   if (!checks) return console.log("No checks found to track");
   checks.forEach((check) => {
     numberOfChecks++;
     setInterval(async () => {
-      const result = await axios.get(check.url);
+      const result = await axios({
+        method: check.protocol,
+        url: check.url,
+        port: check.port,
+        path: check.path,
+        timeout: check.timeout,
+        ignoreSSL: check.ignoreSSL,
+        httpHeaders: check.httpHeaders,
+        authentication: check.authentication,
+      });
+
       const report = new Report({
         checkId: check._id,
         result: result.data,
@@ -32,7 +41,17 @@ const intiateSingleContinousCheck = async (checkId) => {
   });
   if (!check) return res.status(400).send("Check not found");
   setInterval(async () => {
-    const result = await axios.get(check.url);
+    const result = await axios({
+      method: check.protocol,
+      url: check.url,
+      port: check.port,
+      path: check.path,
+      timeout: check.timeout,
+      ignoreSSL: check.ignoreSSL,
+      httpHeaders: check.httpHeaders,
+      authentication: check.authentication,
+    });
+
     const report = new Report({
       checkId: check._id,
       result: result.data,
@@ -44,6 +63,8 @@ const intiateSingleContinousCheck = async (checkId) => {
     await report.save();
   }, check.frequency);
   check.save();
+  numberOfChecks++;
+  console.log("Number of checks being tracked : " + numberOfChecks);
 };
 
 const stopSingleContinousCheck = async (checkId) => {
@@ -52,6 +73,8 @@ const stopSingleContinousCheck = async (checkId) => {
   });
   if (!check) return res.status(400).send("Check not found");
   clearInterval(check.intervalId);
+  numberOfChecks--;
+  console.log("Number of checks being tracked : " + numberOfChecks);
 };
 
 const handleGetReportsByCheckId = async (req, res) => {
