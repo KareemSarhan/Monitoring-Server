@@ -27,6 +27,5 @@ const handleSignIn = async (req, res) => {
   } catch (err) {
     console.log(err);
   }
-  // Our register logic ends here
 };
 module.exports = { handleSignIn };

@@ -2,21 +2,7 @@ const User = require("../models/User");
 const Verfication = require("../models/Verfication");
 const bcrypt = require("bcryptjs");
 const { v4: uuidv4 } = require("uuid");
-const nodeMailer = require("nodemailer");
-let transporter = nodeMailer.createTransport({
-  service: "gmail",
-  auth: {
-    user: process.env.MyMail,
-    pass: process.env.MyPass,
-  },
-});
-transporter.verify((error, success) => {
-  if (error) {
-    console.log(error);
-  } else {
-    console.log("Mailing service ready.");
-  }
-});
+const transporter = require("../config/nodemailer");
 
 const handleNewUser = async (req, res) => {
   const { email, password } = req.body;

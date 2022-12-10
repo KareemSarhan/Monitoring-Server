@@ -6,11 +6,7 @@ require("dotenv").config();
 
 app.use(express.json());
 
-const mongoose = require("mongoose");
-mongoose.connect(process.env.MongoURI, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-});
+const mongoose = require("./config/mongo").mongoose;
 
 app.listen(port, () => {
   console.log(`Example app listening on port ${port}`);
@@ -25,6 +21,10 @@ app.post("/signIn", SignInController.handleSignIn);
 
 const MonitorController = require("./controllers/monitorController");
 app.post("/addCheck", auth, MonitorController.handleAddCheck);
+app.get("/getCheck/:checkId", auth, MonitorController.handleGetCheckById);
+app.get("/getChecks/:tag", auth, MonitorController.handleGetChecksByTag);
+app.delete("/deleteCheck/:checkId", auth, MonitorController.hadleDeleteCheck);
+app.put("/updateCheck/:checkId", auth, MonitorController.handleUpdateCheck);
 
 app.get("/", (req, res) => {
   res.send("Hello World!");
