@@ -34,7 +34,7 @@ const CheckSchema = new Schema({
   },
   interval: {
     type: Number,
-    default: 1000,
+    default: 600000,
   },
   threshold: {
     type: Number,

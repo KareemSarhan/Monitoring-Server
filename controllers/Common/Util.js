@@ -1,6 +1,7 @@
 const axios = require("axios");
-const Check = require("./models/Check");
-const Report = require("./models/Report");
+const Check = require("../../models/Check");
+const Report = require("../../models/Report");
+
 var intervalIdDict = {};
 var numberOfChecks = 0;
 const intiateContinuousCheck = async () => {

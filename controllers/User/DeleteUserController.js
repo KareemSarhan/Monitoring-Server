@@ -1,10 +1,9 @@
-User = require("../models/User");
-const Check = require("../models/Check");
-const { stopSingleContinousCheck } = require("../utils.js");
-const Report = require("../models/Report");
+User = require("../../models/User");
+const Check = require("../../models/Check");
+const { stopSingleContinousCheck } = require("../Common/Util.js");
+const Report = require("../../models/Report");
 
 bcrypt = require("bcryptjs");
-// remove user and all his checks and all thier reports
 const handleDeleteUser = async (req, res) => {
   const { email, password } = req.body;
   if (!email || !password) return res.sendStatus(400);

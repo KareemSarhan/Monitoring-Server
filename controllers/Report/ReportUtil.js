@@ -1,8 +1,6 @@
-const User = require("../models/User");
-const Check = require("../models/Check");
-const Report = require("../models/Report");
+import Report from "../../models/Report";
 
-async function CreateReport(check) {
+export async function CreateReport(check) {
   const reports = await Report.find({
     checkId: check._id,
   });
@@ -60,37 +58,5 @@ async function CreateReport(check) {
     averageResponseTime,
     history: reports,
   };
-  console.log(result);
   return result;
 }
-
-const handleGetReportsByCheckId = async (req, res) => {
-  const { user_id } = req.user;
-  const checkId = req.params.checkId;
-  const check = await Check.findOne({
-    _id: checkId,
-    user: user_id,
-  });
-  if (!check) return res.status(400).send("Check not found");
-  const result = await CreateReport(check);
-  console.log(result);
-  return res.json(result);
-};
-const handleGetReportsByTag = async (req, res) => {
-  const { user_id } = req.user;
-  const reports = [];
-  const checks = await Check.find({});
-  if (!checks) return res.status(400).send("Check not found");
-  for (let i = 0; i < checks.length; i++) {
-    if (checks[i].tags.includes(req.params.tag)) {
-      const result = await CreateReport(checks[i]);
-      reports.push(result);
-    }
-  }
-  return res.json(reports);
-};
-
-module.exports = {
-  handleGetReportsByCheckId,
-  handleGetReportsByTag,
-};

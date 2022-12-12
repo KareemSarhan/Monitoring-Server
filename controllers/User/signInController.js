@@ -1,6 +1,10 @@
 const User = require("../models/User");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
+User = require("../../models/User");
+const Check = require("../../models/Check");
+const { stopSingleContinousCheck } = require("../Common/Util.js");
+const Report = require("../../models/Report");
 
 const handleSignIn = async (req, res) => {
   try {

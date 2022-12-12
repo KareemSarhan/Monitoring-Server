@@ -13,10 +13,10 @@ app.listen(port, () => {
 });
 const SignUpController = require("./controllers/signUpController");
 const SignInController = require("./controllers/signInController");
-const DeleteUserController = require("./controllers/deleteUserController");
-const { intiateContinuousCheck } = require("./utils");
-const CheckController = require("./controllers/checkController");
-const ReportController = require("./controllers/reportController");
+const DeleteUserController = require("./controllers/User/DeleteUserController");
+const { intiateContinuousCheck } = require("./controllers/Common/Util");
+const CheckController = require("./controllers/Check/UpdateCheckController");
+const ReportController = require("./controllers/Report/ReportUtil");
 
 //user routes
 app.delete("/deleteUser", DeleteUserController.handleDeleteUser);
