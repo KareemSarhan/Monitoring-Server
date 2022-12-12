@@ -3,7 +3,6 @@ const Check = require("../../models/Check");
 const Report = require("../../models/Report");
 
 var intervalIdDict = {};
-var numberOfChecks = 0;
 const intiateContinuousCheck = async () => {
   const checks = await Check.find();
   if (!checks) return console.log("No checks found to track");
@@ -70,21 +69,21 @@ const intiateSingleContinousCheck = async (check) => {
     });
     await report.save();
   }, check.interval);
-  numberOfChecks++;
-  console.log("Number of checks being tracked : " + numberOfChecks);
+  console.log("Number of checks being tracked : " + intervalIdDict.length);
 };
 
 const stopSingleContinousCheck = async (check) => {
   clearInterval(intervalIdDict[check._id]);
-  numberOfChecks--;
-  console.log("Number of checks being tracked : " + numberOfChecks);
+  delete intervalIdDict[check._id];
+  console.log("Number of checks being tracked : " + intervalIdDict.length);
 };
 const stopAll = async () => {
   for (var key in intervalIdDict) {
     clearInterval(intervalIdDict[key]);
+    delete intervalIdDict[key];
   }
   numberOfChecks = 0;
-  console.log("Number of checks being tracked : " + numberOfChecks);
+  console.log("Number of checks being tracked : " + intervalIdDict.length);
 };
 
 module.exports = {

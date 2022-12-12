@@ -1,9 +1,32 @@
+require("dotenv").config();
 const express = require("express");
+const { handleAddCheck } = require("./controllers/Check/AddCheckController");
+const {
+  handleDeleteCheck,
+} = require("./controllers/Check/DeleteCheckController");
+const {
+  handleGetAllChecks,
+  handleGetCheckById,
+  handleGetChecksByTag,
+} = require("./controllers/Check/GetCheckController");
+const {
+  handleUpdateCheck,
+} = require("./controllers/Check/UpdateCheckController");
+const {
+  handleGetReportsByTag,
+  handleGetReportsByCheckId,
+} = require("./controllers/Report/GetReportsController");
+const { handleDeleteUser } = require("./controllers/User/DeleteUserController");
+const { handleSignIn } = require("./controllers/User/signInController");
+const { handleNewUser } = require("./controllers/User/signUpController");
+const {
+  handleVerfication,
+} = require("./controllers/User/verficationController");
+
 const app = express();
 const port = 3000;
 const auth = require("./middleware/auth");
-require("dotenv").config();
-
+const Verfication = require("./models/Verfication");
 app.use(express.json());
 
 const mongoose = require("./config/mongo").mongoose;
@@ -11,43 +34,30 @@ const mongoose = require("./config/mongo").mongoose;
 app.listen(port, () => {
   console.log(`Example app listening on port ${port}`);
 });
-const SignUpController = require("./controllers/signUpController");
-const SignInController = require("./controllers/signInController");
-const DeleteUserController = require("./controllers/User/DeleteUserController");
-const { intiateContinuousCheck } = require("./controllers/Common/Util");
-const CheckController = require("./controllers/Check/UpdateCheckController");
-const ReportController = require("./controllers/Report/ReportUtil");
 
 //user routes
-app.delete("/deleteUser", DeleteUserController.handleDeleteUser);
-app.post("/signUp", SignUpController.handleNewUser);
-app.get("/verfy/:uniqueString", SignUpController.handleVerfication);
-app.post("/signIn", SignInController.handleSignIn);
+app.delete("/deleteUser", handleDeleteUser);
+app.post("/signUp", handleNewUser);
+app.get("/verfy/:uniqueString", handleVerfication);
+app.post("/signIn", handleSignIn);
 
 //checks routes
-app.post("/addCheck", auth, CheckController.handleAddCheck);
-app.get("/getAllChecks", auth, CheckController.handleGetAllChecks);
-app.get("/getCheck/:checkId", auth, CheckController.handleGetCheckById);
-app.get("/getChecks/:tag", auth, CheckController.handleGetChecksByTag);
-app.delete("/deleteCheck/:checkId", auth, CheckController.handleDeleteCheck);
-app.put("/updateCheck/:checkId", auth, CheckController.handleUpdateCheck);
+app.post("/addCheck", auth, handleAddCheck);
+app.get("/getAllChecks", auth, handleGetAllChecks);
+app.get("/getCheck/:checkId", auth, handleGetCheckById);
+app.get("/getChecks/:tag", auth, handleGetChecksByTag);
+app.delete("/deleteCheck/:checkId", auth, handleDeleteCheck);
+app.put("/updateCheck/:checkId", auth, handleUpdateCheck);
 
 //reports routes
-app.get(
-  "/getCheckReport/:checkId",
-  auth,
-  ReportController.handleGetReportsByCheckId
-);
-app.get("/getCheckReports/:tag", auth, ReportController.handleGetReportsByTag);
+app.get("/getCheckReport/:checkId", auth, handleGetReportsByCheckId);
+app.get("/getCheckReports/:tag", auth, handleGetReportsByTag);
 
 app.get("/", (req, res) => {
   res.send("Hello World!");
 });
-try {
-  intiateContinuousCheck();
-  console.log("Continuous Check Started ");
-} catch (err) {
-  console.log(err);
-}
+
+intiateContinuousCheck();
+console.log("Continuous Check Started :D");
 
 module.exports = app;

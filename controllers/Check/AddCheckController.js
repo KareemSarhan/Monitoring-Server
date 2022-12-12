@@ -1,10 +1,5 @@
-const User = require("../../models/User");
 const Check = require("../../models/Check");
-const Report = require("../../models/Report");
-const bcrypt = require("bcryptjs");
-const jwt = require("jsonwebtoken");
 const { intiateSingleContinousCheck } = require("../Common/Util.js");
-const { stopSingleContinousCheck } = require("../Common/Util.js");
 
 const handleAddCheck = async (req, res) => {
   const { user_id } = req.user;
@@ -38,6 +33,7 @@ const handleAddCheck = async (req, res) => {
     res.json({ message: err });
   }
 };
-exports.module = {
+
+module.exports = {
   handleAddCheck,
 };
