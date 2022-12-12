@@ -1,8 +1,8 @@
-const User = require("../models/User");
-const Verfication = require("../models/Verfication");
+const Verfication = require("../../models/Verfication");
+const User = require("../../models/User");
 const bcrypt = require("bcryptjs");
 const { v4: uuidv4 } = require("uuid");
-const transporter = require("../config/nodemailer");
+const transporter = require("../../config/nodemailer");
 
 const handleNewUser = async (req, res) => {
   const { email, password } = req.body;
@@ -30,13 +30,5 @@ const handleNewUser = async (req, res) => {
 
   return res.sendStatus(200);
 };
-const handleVerfication = async (req, res) => {
-  let { uniqueString } = req.params;
-  const ver = await Verfication.findOne({ uniqueString: uniqueString });
-  if (!ver) return res.sendStatus(404);
-  await User.updateOne({ _id: ver.user }, { $set: { verficationState: true } });
-  await Verfication.deleteOne({ uniqueString: uniqueString });
-  return res.sendStatus(200);
-};
 
-module.exports = { handleNewUser, handleVerfication };
+module.exports = { handleNewUser };

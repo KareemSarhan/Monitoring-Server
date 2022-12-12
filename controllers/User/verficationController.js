@@ -1,5 +1,5 @@
-const User = require("../models/User");
-const Verfication = require("../models/Verfication");
+const Verfication = require("../../models/Verfication");
+const User = require("../../models/User");
 
 const handleVerfication = async (req, res) => {
   let { uniqueString } = req.params;

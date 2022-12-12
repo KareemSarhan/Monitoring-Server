@@ -1,8 +1,8 @@
-const mongoose = require("./config/mongo").mongoose;
+const mongoose = require("../config/mongo").mongoose;
 const request = require("supertest");
-const app = require("./app");
-const User = require("./models/User");
-const Verfication = require("./models/Verfication");
+const app = require("../app");
+const User = require("../models/User");
+const Verfication = require("../models/Verfication");
 const supertest = require("supertest");
 const requestWithSupertest = supertest(app);
 

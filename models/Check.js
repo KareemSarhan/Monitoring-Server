@@ -38,7 +38,7 @@ const CheckSchema = new Schema({
   },
   threshold: {
     type: Number,
-    default: 1,
+    default: 3,
   },
   authentication: {
     username: {

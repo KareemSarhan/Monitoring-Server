@@ -1,8 +1,11 @@
 const axios = require("axios");
 const Check = require("../../models/Check");
 const Report = require("../../models/Report");
+const { SendNotfication } = require("./Notify");
 
 var intervalIdDict = {};
+var ChecksTimeOutCountsDict = {};
+var ChecksCanSendNotficationDict = {};
 const intiateContinuousCheck = async () => {
   const checks = await Check.find();
   if (!checks) return console.log("No checks found to track");
@@ -15,6 +18,18 @@ const intiateSingleContinousCheck = async (check) => {
   var setIntervalID = setInterval(async () => {
     console.log("Checking " + check.name);
     var result = undefined;
+    if (ChecksTimeOutCountsDict[check._id] === undefined) {
+      ChecksTimeOutCountsDict = {
+        ...ChecksTimeOutCountsDict,
+        [check._id]: 0,
+      };
+    }
+    if (ChecksCanSendNotficationDict[check._id] === undefined) {
+      ChecksCanSendNotficationDict = {
+        ...ChecksCanSendNotficationDict,
+        [check._id]: true,
+      };
+    }
     try {
       var axiosOptions = {};
       axiosOptions.url = check.url;
@@ -56,11 +71,19 @@ const intiateSingleContinousCheck = async (check) => {
         return response;
       });
       result = await instance(axiosOptions);
-      intervalIdDict = { ...intervalIdDict, [check._id]: setIntervalID };
     } catch (error) {
       console.log("setInterval error : ", error.name);
-      console.log("setInterval error : ", error);
+      ChecksTimeOutCountsDict[check._id] += 1;
+      if (ChecksTimeOutCountsDict[check._id] >= check.threshold) {
+        if (ChecksCanSendNotficationDict[check._id]) {
+          SendNotfication(check);
+          ChecksCanSendNotficationDict[check._id] = false;
+          console.log("Notification sent for " + check.name);
+        }
+      }
     }
+    intervalIdDict = { ...intervalIdDict, [check._id]: setIntervalID };
+
     const report = await new Report({
       check: check._id,
       status: result ? result.status : -1,
@@ -69,26 +92,22 @@ const intiateSingleContinousCheck = async (check) => {
     });
     await report.save();
   }, check.interval);
-  console.log("Number of checks being tracked : " + intervalIdDict.length);
+
+  console.log(
+    "Number of checks being tracked : " + Object.keys(intervalIdDict).length
+  );
 };
 
 const stopSingleContinousCheck = async (check) => {
   clearInterval(intervalIdDict[check._id]);
   delete intervalIdDict[check._id];
-  console.log("Number of checks being tracked : " + intervalIdDict.length);
-};
-const stopAll = async () => {
-  for (var key in intervalIdDict) {
-    clearInterval(intervalIdDict[key]);
-    delete intervalIdDict[key];
-  }
-  numberOfChecks = 0;
-  console.log("Number of checks being tracked : " + intervalIdDict.length);
+  console.log(
+    "Number of checks being tracked : " + Object.keys(intervalIdDict).length
+  );
 };
 
 module.exports = {
   intiateContinuousCheck,
   intiateSingleContinousCheck,
   stopSingleContinousCheck,
-  stopAll,
 };
