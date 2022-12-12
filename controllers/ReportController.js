@@ -1,81 +1,6 @@
 const User = require("../models/User");
 const Check = require("../models/Check");
 const Report = require("../models/Report");
-const axios = require("axios");
-const numberOfChecks = 0;
-const intiateContinuousCheck = async () => {
-  const checks = await Check.find();
-  if (!checks) return console.log("No checks found to track");
-  checks.forEach((check) => {
-    numberOfChecks++;
-    setInterval(async () => {
-      const result = await axios({
-        method: check.protocol,
-        url: check.url,
-        port: check.port,
-        path: check.path,
-        timeout: check.timeout,
-        ignoreSSL: check.ignoreSSL,
-        httpHeaders: check.httpHeaders,
-        authentication: check.authentication,
-      });
-
-      const report = new Report({
-        checkId: check._id,
-        result: result.data,
-        status: result.status,
-        responseTime: result.responseTime,
-      });
-      await report.save();
-    }, check.frequency).then((intervalId) => {
-      check.intervalId = intervalId;
-    });
-    check.save();
-  });
-  return console.log("Number of checks being tracked : " + numberOfChecks);
-};
-
-const intiateSingleContinousCheck = async (checkId) => {
-  const check = await Check.findOne({
-    _id: checkId,
-  });
-  if (!check) return res.status(400).send("Check not found");
-  setInterval(async () => {
-    const result = await axios({
-      method: check.protocol,
-      url: check.url,
-      port: check.port,
-      path: check.path,
-      timeout: check.timeout,
-      ignoreSSL: check.ignoreSSL,
-      httpHeaders: check.httpHeaders,
-      authentication: check.authentication,
-    });
-
-    const report = new Report({
-      checkId: check._id,
-      result: result.data,
-      status: result.status,
-      responseTime: result.responseTime,
-    }).then((intervalId) => {
-      check.intervalId = intervalId;
-    });
-    await report.save();
-  }, check.frequency);
-  check.save();
-  numberOfChecks++;
-  console.log("Number of checks being tracked : " + numberOfChecks);
-};
-
-const stopSingleContinousCheck = async (checkId) => {
-  const check = await Check.findOne({
-    _id: checkId,
-  });
-  if (!check) return res.status(400).send("Check not found");
-  clearInterval(check.intervalId);
-  numberOfChecks--;
-  console.log("Number of checks being tracked : " + numberOfChecks);
-};
 
 const handleGetReportsByCheckId = async (req, res) => {
   const { email, password } = req.body;
@@ -91,7 +16,40 @@ const handleGetReportsByCheckId = async (req, res) => {
     checkId: check._id,
   });
   if (!reports) return res.status(400).send("Reports not found");
-  res.json(reports);
+  Curruntstatus = 0;
+  availability = 0;
+  outages = 0;
+  downtime = 0;
+  uptime = 0;
+  averageResponseTime = 0;
+  newestReportDate = reports[0].createdAt;
+  for (let i = 0; i < reports.length; i++) {
+    if (reports[i].createdAt > newestReportDate) {
+      newestReportDate = reports[i].createdAt;
+      Curruntstatus = reports[i].status;
+    }
+
+    if (reports[i].status != 200) {
+      outages++;
+      downtime += reports[i].responseTime * check.frequency;
+    } else reports[i].status == 200;
+    {
+      uptime += reports[i].responseTime * check.frequency;
+    }
+    averageResponseTime += reports[i].responseTime;
+  }
+  averageResponseTime = averageResponseTime / reports.length;
+  availability = (uptime / (uptime + downtime)) * 100;
+  const result = {
+    Curruntstatus,
+    availability,
+    outages,
+    downtime,
+    uptime,
+    responseTime,
+    history: reports,
+  };
+  return res.json(result);
 };
 const handleGetReportsByTag = async (req, res) => {
   const { email, password } = req.body;
@@ -110,9 +68,6 @@ const handleGetReportsByTag = async (req, res) => {
 };
 
 module.exports = {
-  intiateContinuousCheck,
-  intiateSingleContinousCheck,
-  stopSingleContinousCheck,
   handleGetReportsByCheckId,
   handleGetReportsByTag,
 };

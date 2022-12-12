@@ -20,8 +20,7 @@ const handleSignIn = async (req, res) => {
 
       user.token = token;
 
-      // user
-      return res.status(200).json(user.token);
+      return res.status(200).json({ token: user.token });
     }
     return res.status(400).send("Invalid Credentials");
   } catch (err) {

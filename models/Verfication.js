@@ -6,7 +6,11 @@ const VerficationSchema = new Schema({
     type: String,
     required: true,
   },
-  Id: { type: String, required: true },
+  user: {
+    type: Schema.Types.ObjectId,
+    ref: "User",
+    required: true,
+  },
   expireAt: { type: Date, expires: 3600 },
 });
 

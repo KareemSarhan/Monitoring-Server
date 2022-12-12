@@ -2,17 +2,22 @@ const mongoose = require("mongoose");
 const { boolean } = require("webidl-conversions");
 const Schema = mongoose.Schema;
 const CheckSchema = new Schema({
-  owner: {
+  user: {
     type: Schema.Types.ObjectId,
     ref: "User",
     required: true,
   },
   name: { type: String, required: true },
+  method: {
+    type: String,
+    enum: ["GET", "POST", "PUT", "DELETE"],
+    default: "GET",
+  },
   url: { type: String, required: true },
   protocol: {
     type: String,
-    enum: ["http:", "https:", "tcp:"],
-    default: "http:",
+    enum: ["http", "https", "tcp"],
+    default: "http",
   },
   path: {
     type: String,
@@ -53,7 +58,7 @@ const CheckSchema = new Schema({
   tags: [{ type: String }],
   ignoreSSL: {
     type: Boolean,
-    required: true,
+    default: false,
   },
   time: {
     type: Date,

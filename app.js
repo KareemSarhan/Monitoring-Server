@@ -13,19 +13,23 @@ app.listen(port, () => {
 });
 const SignUpController = require("./controllers/signUpController");
 const SignInController = require("./controllers/signInController");
-
+const DeleteUserController = require("./controllers/deleteUserController");
+const { intiateContinuousCheck } = require("./utils");
+const CheckController = require("./controllers/checkController");
+//user routes
+app.delete("/deleteUser", DeleteUserController.handleDeleteUser);
 app.post("/signUp", SignUpController.handleNewUser);
 app.get("/verfy/:uniqueString", SignUpController.handleVerfication);
-
 app.post("/signIn", SignInController.handleSignIn);
 
-const MonitorController = require("./controllers/monitorController");
-const { intiateContinuousCheck } = require("./controllers/ReportController");
-app.post("/addCheck", auth, MonitorController.handleAddCheck);
-app.get("/getCheck/:checkId", auth, MonitorController.handleGetCheckById);
-app.get("/getChecks/:tag", auth, MonitorController.handleGetChecksByTag);
-app.delete("/deleteCheck/:checkId", auth, MonitorController.hadleDeleteCheck);
-app.put("/updateCheck/:checkId", auth, MonitorController.handleUpdateCheck);
+//checks routes
+app.post("/addCheck", auth, CheckController.handleAddCheck);
+app.get("/getAllChecks", auth, CheckController.handleGetAllChecks);
+app.get("/getCheck/:checkId", auth, CheckController.handleGetCheckById);
+app.get("/getChecks/:tag", auth, CheckController.handleGetChecksByTag);
+
+app.delete("/deleteCheck/:checkId", auth, CheckController.handleDeleteCheck);
+app.put("/updateCheck/:checkId", auth, CheckController.handleUpdateCheck);
 
 app.get("/", (req, res) => {
   res.send("Hello World!");
@@ -36,3 +40,5 @@ try {
 } catch (err) {
   console.log(err);
 }
+
+module.exports = app;

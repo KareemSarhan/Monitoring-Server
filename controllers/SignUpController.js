@@ -17,7 +17,7 @@ const handleNewUser = async (req, res) => {
     const uniqueString = (await uuidv4()) + 123;
     await Verfication.create({
       uniqueString: uniqueString,
-      Id: result._id,
+      user: result._id,
     });
     const mailOptions = {
       from: process.env.AUTH_EMAIL,
@@ -34,10 +34,8 @@ const handleVerfication = async (req, res) => {
   let { uniqueString } = req.params;
   const ver = await Verfication.findOne({ uniqueString: uniqueString }).exec();
   if (!ver) return res.sendStatus(404);
-  const user = await User.findByIdAndUpdate(
-    { _id: ver.Id },
-    { verficationState: true }
-  );
+  await User.updateOne({ _id: ver.user }, { $set: { verified: true } });
+  await Verfication.deleteOne({ uniqueString: uniqueString });
   return res.sendStatus(200);
 };
 

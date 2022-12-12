@@ -8,15 +8,12 @@ const ReportSchema = new Schema({
   },
   result: {
     type: String,
-    required: true,
   },
   status: {
     type: Number,
-    required: true,
   },
   responseTime: {
     type: Number,
-    required: true,
   },
   time: {
     type: Date,
