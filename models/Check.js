@@ -1,5 +1,4 @@
 const mongoose = require("mongoose");
-const { boolean } = require("webidl-conversions");
 const Schema = mongoose.Schema;
 const CheckSchema = new Schema({
   user: {
@@ -35,7 +34,7 @@ const CheckSchema = new Schema({
   },
   interval: {
     type: Number,
-    default: 600,
+    default: 1000,
   },
   threshold: {
     type: Number,
@@ -63,9 +62,6 @@ const CheckSchema = new Schema({
   time: {
     type: Date,
     default: Date.now,
-  },
-  intervalId: {
-    type: String,
   },
 });
 

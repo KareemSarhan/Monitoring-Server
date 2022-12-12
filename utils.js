@@ -1,7 +1,7 @@
 const axios = require("axios");
 const Check = require("./models/Check");
 const Report = require("./models/Report");
-
+var intervalIdDict = {};
 var numberOfChecks = 0;
 const intiateContinuousCheck = async () => {
   const checks = await Check.find();
@@ -12,7 +12,7 @@ const intiateContinuousCheck = async () => {
 };
 
 const intiateSingleContinousCheck = async (check) => {
-  const asd = setInterval(async () => {
+  var setIntervalID = setInterval(async () => {
     console.log("Checking " + check.name);
     var result = undefined;
     try {
@@ -42,31 +42,53 @@ const intiateSingleContinousCheck = async (check) => {
         axiosOptions.port = check.port;
       }
 
-      result = await axios(axiosOptions);
+      const instance = axios.create();
+
+      instance.interceptors.request.use((config) => {
+        config.headers["request-startTime"] = new Date().getTime();
+        return config;
+      });
+
+      instance.interceptors.response.use((response) => {
+        const currentTime = new Date().getTime();
+        const startTime = response.config.headers["request-startTime"];
+        response.headers["request-duration"] = currentTime - startTime;
+        return response;
+      });
+      result = await instance(axiosOptions);
+      intervalIdDict = { ...intervalIdDict, [check._id]: setIntervalID };
     } catch (error) {
-      console.log("axios error: ", error.name);
+      console.log("setInterval error : ", error.name);
+      console.log("setInterval error : ", error);
     }
     const report = await new Report({
       check: check._id,
-      status: result ? result.status : 0,
-      responseTime: result ? result.responseTime : 0,
+      status: result ? result.status : -1,
+      responseTime: result ? result.headers["request-duration"] : -1,
       result: result ? JSON.stringify(result.data) : "",
     });
     await report.save();
-  }, check.interval * 20000);
-  check.intervalId = asd.asyncID;
-  check.save();
+  }, check.interval);
   numberOfChecks++;
   console.log("Number of checks being tracked : " + numberOfChecks);
 };
 
 const stopSingleContinousCheck = async (check) => {
-  clearInterval(check.intervalId);
+  clearInterval(intervalIdDict[check._id]);
   numberOfChecks--;
   console.log("Number of checks being tracked : " + numberOfChecks);
 };
+const stopAll = async () => {
+  for (var key in intervalIdDict) {
+    clearInterval(intervalIdDict[key]);
+  }
+  numberOfChecks = 0;
+  console.log("Number of checks being tracked : " + numberOfChecks);
+};
+
 module.exports = {
   intiateContinuousCheck,
   intiateSingleContinousCheck,
   stopSingleContinousCheck,
+  stopAll,
 };

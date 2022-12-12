@@ -8,12 +8,12 @@ bcrypt = require("bcryptjs");
 const handleDeleteUser = async (req, res) => {
   const { email, password } = req.body;
   if (!email || !password) return res.sendStatus(400);
-  const removedUser = await User.findOne({ email: email.toLowerCase() });
-  if (!removedUser) return res.status(400).send("User not found");
-  if (!(await bcrypt.compare(password, removedUser.password)))
+  const user = await User.findOne({ email: email.toLowerCase() });
+  if (!user) return res.status(400).send("User not found");
+  if (!(await bcrypt.compare(password, user.password)))
     return res.status(400).send("Invalid Credentials");
   const checks = await Check.find({
-    user: removedUser._id,
+    user: user._id,
   });
   if (!checks) return res.status(400).send("Checks not found");
   for (let i = 0; i < checks.length; i++) {
@@ -21,17 +21,14 @@ const handleDeleteUser = async (req, res) => {
   }
 
   for (let i = 0; i < checks.length; i++) {
-    const reports = await Report.find({
-      checkId: checks[i]._id,
+    await Report.deleteMany({
+      check: checks[i]._id,
     });
-    for (let j = 0; j < reports.length; j++) {
-      await reports[j].remove();
-    }
     await checks[i].remove();
   }
   try {
-    await removedUser.remove();
-    res.json({ User: removedUser, message: "User removed" });
+    await user.remove();
+    res.json({ User: user, message: "User removed" });
   } catch (err) {
     res.json({ message: err });
   }

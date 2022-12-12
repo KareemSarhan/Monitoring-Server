@@ -2,69 +2,92 @@ const User = require("../models/User");
 const Check = require("../models/Check");
 const Report = require("../models/Report");
 
-const handleGetReportsByCheckId = async (req, res) => {
-  const { email, password } = req.body;
-  const user = await User.findOne({
-    email: email.toLowerCase(),
-  });
-  const check = await Check.findOne({
-    _id: req.params.checkId,
-    owner: user._id,
-  });
-  if (!check) return res.status(400).send("Check not found");
+async function CreateReport(check) {
   const reports = await Report.find({
     checkId: check._id,
   });
-  if (!reports) return res.status(400).send("Reports not found");
+  result = {};
+  if (!reports) {
+    result = {
+      checkId: check._id,
+      url: check.url,
+      name: check.name,
+      ups: 0,
+      Curruntstatus: 0,
+      availability: 0,
+      outages: 0,
+      downtime: 0,
+      uptime: 0,
+      averageResponseTime: 0,
+      history: [],
+    };
+    return result;
+  }
   Curruntstatus = 0;
   availability = 0;
   outages = 0;
   downtime = 0;
   uptime = 0;
+  ups = 0;
   averageResponseTime = 0;
-  newestReportDate = reports[0].createdAt;
+  newestReportDate = reports[0].time;
   for (let i = 0; i < reports.length; i++) {
-    if (reports[i].createdAt > newestReportDate) {
-      newestReportDate = reports[i].createdAt;
+    if (reports[i].time > newestReportDate) {
+      newestReportDate = reports[i].time;
       Curruntstatus = reports[i].status;
     }
-
-    if (reports[i].status != 200) {
+    if (reports[i].status == -1) {
       outages++;
-      downtime += reports[i].responseTime * check.frequency;
-    } else reports[i].status == 200;
-    {
-      uptime += reports[i].responseTime * check.frequency;
+      downtime += check.interval;
+    } else {
+      uptime += check.interval;
+      averageResponseTime += reports[i].responseTime;
+      ups++;
     }
-    averageResponseTime += reports[i].responseTime;
   }
-  averageResponseTime = averageResponseTime / reports.length;
+  averageResponseTime = averageResponseTime / ups;
   availability = (uptime / (uptime + downtime)) * 100;
-  const result = {
+  result = {
+    checkId: check._id,
+    url: check.url,
+    name: check.name,
+    ups,
     Curruntstatus,
     availability,
     outages,
     downtime,
     uptime,
-    responseTime,
+    averageResponseTime,
     history: reports,
   };
+  console.log(result);
+  return result;
+}
+
+const handleGetReportsByCheckId = async (req, res) => {
+  const { user_id } = req.user;
+  const checkId = req.params.checkId;
+  const check = await Check.findOne({
+    _id: checkId,
+    user: user_id,
+  });
+  if (!check) return res.status(400).send("Check not found");
+  const result = await CreateReport(check);
+  console.log(result);
   return res.json(result);
 };
 const handleGetReportsByTag = async (req, res) => {
-  const { email, password } = req.body;
-  const user = await User.findOne({
-    email: email.toLowerCase(),
-  });
-  const checks = await Check.find({
-    owner: user._id,
-  }).filter((check) => check.tags.includes(req.params.tag));
+  const { user_id } = req.user;
+  const reports = [];
+  const checks = await Check.find({});
   if (!checks) return res.status(400).send("Check not found");
-  const reports = await Report.find({
-    checkId: checks._id,
-  });
-  if (!reports) return res.status(400).send("Reports not found");
-  res.json(reports);
+  for (let i = 0; i < checks.length; i++) {
+    if (checks[i].tags.includes(req.params.tag)) {
+      const result = await CreateReport(checks[i]);
+      reports.push(result);
+    }
+  }
+  return res.json(reports);
 };
 
 module.exports = {

@@ -22,7 +22,7 @@ const handleAddCheck = async (req, res) => {
     port: req.body.port,
     webhook: req.body.webhook,
     timeout: req.body.timeout,
-    interval: req.body.interval,
+    interval: req.body.interval * 1000,
     threshold: req.body.threshold,
     authentication: req.body.authentication,
     httpHeaders: req.body.httpHeaders,
@@ -32,8 +32,8 @@ const handleAddCheck = async (req, res) => {
   });
   try {
     await check.save();
-    intiateSingleContinousCheck(savedCheck);
-    return res.json(check);
+    res.json({ Check: check.name, message: "Check added" });
+    intiateSingleContinousCheck(check);
   } catch (err) {
     res.json({ message: err });
   }
@@ -49,16 +49,17 @@ const handleGetCheckById = async (req, res) => {
 };
 const handleGetChecksByTag = async (req, res) => {
   const { user_id } = req.user;
+  result = [];
   const checks = await Check.find({
     user: user_id,
   });
   for (let i = 0; i < checks.length; i++) {
     if (checks[i].tags.includes(req.params.tag)) {
-      return res.json(checks[i]);
+      result.push(checks[i]);
     }
   }
   if (!checks) return res.status(400).send("Check not found");
-  res.json(checks);
+  res.json(result);
 };
 const handleGetAllChecks = async (req, res) => {
   const { user_id } = req.user;
@@ -77,14 +78,11 @@ const handleDeleteCheck = async (req, res) => {
   if (!check) return res.status(400).send("Check not found");
   try {
     stopSingleContinousCheck(check);
-    const reports = await Report.find({
+    const reports = await Report.deleteMany({
       check: check._id,
     });
-    for (let i = 0; i < reports.length; i++) {
-      await reports[i].remove();
-    }
-    const removedCheck = await check.remove();
-    res.json(removedCheck);
+    await check.remove();
+    res.json({ message: "Check " + check.name + " deleted" });
   } catch (err) {
     res.json({ message: err });
   }
@@ -106,7 +104,7 @@ const handleUpdateCheck = async (req, res) => {
     if (req.body.port) newData.port = req.body.port;
     if (req.body.webhook) newData.webhook = req.body.webhook;
     if (req.body.timeout) newData.timeout = req.body.timeout;
-    if (req.body.interval) newData.interval = req.body.interval;
+    if (req.body.interval) newData.interval = req.body.interval * 1000;
     if (req.body.threshold) newData.threshold = req.body.threshold;
     if (req.body.authentication)
       newData.authentication = req.body.authentication;
@@ -117,8 +115,8 @@ const handleUpdateCheck = async (req, res) => {
     const updatedCheck = await check.updateOne({
       $set: newData,
     });
+    res.json({ message: "Check " + check.name + " updated" });
     intiateSingleContinousCheck(check);
-    res.json(updatedCheck);
   } catch (err) {
     res.json({ message: err });
   }

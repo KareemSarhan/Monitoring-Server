@@ -16,6 +16,8 @@ const SignInController = require("./controllers/signInController");
 const DeleteUserController = require("./controllers/deleteUserController");
 const { intiateContinuousCheck } = require("./utils");
 const CheckController = require("./controllers/checkController");
+const ReportController = require("./controllers/reportController");
+
 //user routes
 app.delete("/deleteUser", DeleteUserController.handleDeleteUser);
 app.post("/signUp", SignUpController.handleNewUser);
@@ -27,9 +29,16 @@ app.post("/addCheck", auth, CheckController.handleAddCheck);
 app.get("/getAllChecks", auth, CheckController.handleGetAllChecks);
 app.get("/getCheck/:checkId", auth, CheckController.handleGetCheckById);
 app.get("/getChecks/:tag", auth, CheckController.handleGetChecksByTag);
-
 app.delete("/deleteCheck/:checkId", auth, CheckController.handleDeleteCheck);
 app.put("/updateCheck/:checkId", auth, CheckController.handleUpdateCheck);
+
+//reports routes
+app.get(
+  "/getCheckReport/:checkId",
+  auth,
+  ReportController.handleGetReportsByCheckId
+);
+app.get("/getCheckReports/:tag", auth, ReportController.handleGetReportsByTag);
 
 app.get("/", (req, res) => {
   res.send("Hello World!");
