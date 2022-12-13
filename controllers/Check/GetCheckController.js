@@ -3,8 +3,6 @@ const Check = require("../../models/Check");
 const Report = require("../../models/Report");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
-const { intiateSingleContinousCheck } = require("../Common/Util.js");
-const { stopSingleContinousCheck } = require("../Common/Util.js");
 
 const handleGetCheckById = async (req, res) => {
   const { user_id } = req.user;
