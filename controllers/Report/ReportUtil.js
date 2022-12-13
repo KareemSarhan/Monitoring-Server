@@ -1,6 +1,6 @@
-import Report from "../../models/Report";
+const Report = require("../../models/Report");
 
-export async function CreateReport(check) {
+async function CreateReport(check) {
   const reports = await Report.find({
     checkId: check._id,
   });
@@ -60,3 +60,7 @@ export async function CreateReport(check) {
   };
   return result;
 }
+
+module.exports = {
+  CreateReport,
+};

@@ -1,4 +1,5 @@
 const Check = require("../../models/Check");
+const { CreateReport } = require("./ReportUtil");
 
 const handleGetReportsByCheckId = async (req, res) => {
   const { user_id } = req.user;
